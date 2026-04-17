@@ -4,7 +4,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
 export async function POST(request) {
   const body = await request.json()
-  const { address, lat, lng } = body
+  const { address, lat, lng, amount = 200 } = body
 
   if (!address || !lat || !lng) {
     return Response.json({ error: 'パラメータが不足しています' }, { status: 400 })
@@ -23,7 +23,7 @@ export async function POST(request) {
             name: 'トッチー 住所検索',
             description: `${address} の相場・法令・ハザード情報`,
           },
-          unit_amount: 200,
+          unit_amount: amount,
         },
         quantity: 1,
       },

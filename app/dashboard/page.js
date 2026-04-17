@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 import dynamic from 'next/dynamic'
 import PricePanel from '@/components/panels/PricePanel'
 import ZoningPanel from '@/components/panels/ZoningPanel'
@@ -18,6 +19,8 @@ function DashboardContent() {
   const lat = parseFloat(searchParams.get('lat'))
   const lng = parseFloat(searchParams.get('lng'))
   const sessionId = searchParams.get('session_id')
+  const access = searchParams.get('access')
+  const user = useAuth()
 
   const [verified, setVerified] = useState(false)
   const [verifyError, setVerifyError] = useState(false)
@@ -75,6 +78,7 @@ function DashboardContent() {
   // 認証チェック＋データ取得を同時起動
   useEffect(() => {
     if (!address || !lat || !lng) { router.replace('/'); return }
+    if (user === undefined) return // Firebase auth 読み込み中
 
     if (sessionId) {
       fetch(`/api/stripe/verify?session_id=${sessionId}`)
@@ -84,12 +88,23 @@ function DashboardContent() {
           else setVerifyError(true)
         })
         .catch(() => setVerifyError(true))
+    } else if (access === 'free') {
+      if (localStorage.getItem('tocchi_free_used') === 'true') {
+        setVerified(true); doFetch()
+      } else {
+        router.replace('/')
+      }
+    } else if (access === 'auth') {
+      if (user) {
+        setVerified(true); doFetch()
+      } else {
+        router.replace('/login')
+      }
     } else {
-      setVerified(true)
-      doFetch()
+      router.replace('/')
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [user])
 
   const execPrint = () => {
     setPrintModal(false)

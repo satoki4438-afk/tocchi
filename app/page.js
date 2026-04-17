@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { useAuth } from '@/context/AuthContext'
 
 function SearchBox() {
   const [query, setQuery] = useState('')
@@ -12,6 +15,7 @@ function SearchBox() {
   const [error, setError] = useState('')
   const debounceRef = useRef(null)
   const router = useRouter()
+  const user = useAuth()
 
   useEffect(() => {
     setIsFreeUsed(localStorage.getItem('tocchi_free_used') === 'true')
@@ -29,34 +33,60 @@ function SearchBox() {
 
   const proceedFree = (item) => {
     localStorage.setItem('tocchi_free_used', 'true')
-    router.push(`/dashboard?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}`)
+    router.push(`/dashboard?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}&access=free`)
   }
 
-  const proceedPay = async (item) => {
+  const proceedStripe = async (item, amount) => {
+    const res = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ address: item.address, lat: item.lat, lng: item.lng, amount }),
+    })
+    const data = await res.json()
+    if (data.url) { window.location.href = data.url }
+    else { setError('決済の開始に失敗しました') }
+  }
+
+  const proceed = async (item) => {
+    if (item.addressCode?.length === 5) {
+      setError('もう少し詳しい住所を入力してください（例：渋谷区神南一丁目）')
+      return
+    }
+
+    // 未ログイン
+    if (!user) {
+      if (!isFreeUsed) {
+        proceedFree(item)
+      } else {
+        router.push(`/login?redirect=${encodeURIComponent('/')}`)
+      }
+      return
+    }
+
+    // ログイン済み
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/stripe/checkout', {
+      const idToken = await user.getIdToken()
+      const res = await fetch('/api/user/check-access', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address: item.address, lat: item.lat, lng: item.lng }),
+        body: JSON.stringify({ idToken }),
       })
       const data = await res.json()
-      if (data.url) { window.location.href = data.url }
-      else { setError('決済の開始に失敗しました') }
+
+      if (data.status === 'free' || data.status === 'monthly') {
+        router.push(`/dashboard?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}&access=auth`)
+      } else if (data.status === 'need_payment_100') {
+        await proceedStripe(item, 100)
+      } else {
+        await proceedStripe(item, 200)
+      }
     } catch {
       setError('エラーが発生しました')
     } finally {
       setLoading(false)
     }
-  }
-
-  const proceed = (item) => {
-    if (item.addressCode?.length === 5) {
-      setError('もう少し詳しい住所を入力してください（例：渋谷区神南一丁目）')
-      return
-    }
-    if (isFreeUsed) { proceedPay(item) } else { proceedFree(item) }
   }
 
   const handleSelect = (item) => {
@@ -126,7 +156,7 @@ function SearchBox() {
           className="bg-stone-900 text-white rounded-xl font-semibold hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap text-sm"
           style={{ height: '52px', padding: '0 24px' }}
         >
-          {loading ? '検索中...' : isFreeUsed ? '¥200 で検索' : '無料で試す'}
+          {loading ? '検索中...' : user ? '検索する' : isFreeUsed ? 'ログインして検索' : '無料で試す'}
         </button>
       </div>
       {error && <p className="mt-3 text-sm text-red-500 text-center">{error}</p>}
@@ -240,18 +270,46 @@ const STEPS = [
 
 const W = { maxWidth: '1100px', margin: '0 auto' }
 
+function Header() {
+  const user = useAuth()
+  const router = useRouter()
+  return (
+    <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #e7e5e4' }}>
+      <div style={{ ...W, padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '20px', fontWeight: 900, letterSpacing: '-0.5px', color: '#1c1917' }}>
+          Tocchi
+        </span>
+        <div className="flex items-center gap-3">
+          {user === undefined ? null : user ? (
+            <>
+              <span className="text-xs text-stone-400 hidden sm:block">{user.email}</span>
+              <button
+                onClick={() => signOut(auth)}
+                className="text-xs text-stone-500 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-50"
+              >
+                ログアウト
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => router.push('/login')}
+              className="text-xs text-stone-700 font-semibold border border-stone-300 rounded-lg px-3 py-1.5 hover:bg-stone-50"
+            >
+              ログイン
+            </button>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-stone-800">
 
       {/* 固定ヘッダー */}
-      <header style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50, background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', borderBottom: '1px solid #e7e5e4' }}>
-        <div style={{ ...W, padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center' }}>
-          <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '20px', fontWeight: 900, letterSpacing: '-0.5px', color: '#1c1917' }}>
-            Tocchi
-          </span>
-        </div>
-      </header>
+      <Header />
 
       {/* ヘッダー分のスペース */}
       <div style={{ height: '56px' }} />
