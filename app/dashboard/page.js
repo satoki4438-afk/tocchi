@@ -156,6 +156,9 @@ function DashboardContent() {
           <button onClick={() => setPrintModal(true)} className="text-xs text-stone-500 border border-stone-200 px-3 py-1 rounded-md hover:bg-stone-50">
             印刷する
           </button>
+          <button onClick={() => router.push('/mypage')} className="text-xs text-stone-500 border border-stone-200 px-3 py-1 rounded-md hover:bg-stone-50">
+            マイページ
+          </button>
           <button onClick={() => router.push('/')} className="text-xs text-stone-500 border border-stone-200 px-3 py-1 rounded-md hover:bg-stone-50">
             別の住所
           </button>
