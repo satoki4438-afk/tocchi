@@ -37,6 +37,11 @@ export async function POST(request) {
 
   const user = userDoc.data()
 
+  // 管理者は無制限
+  if (user.isAdmin) {
+    return Response.json({ status: 'monthly' })
+  }
+
   // 無料枠が残っている
   if (!user.freeUsed) {
     await userRef.update({ freeUsed: true })
