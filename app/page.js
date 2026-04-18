@@ -282,12 +282,11 @@ function Header() {
         <div className="flex items-center gap-3">
           {user === undefined ? null : user ? (
             <>
-              <span className="text-xs text-stone-400 hidden sm:block">{user.email}</span>
               <button
-                onClick={() => signOut(auth)}
+                onClick={() => router.push('/mypage')}
                 className="text-xs text-stone-500 border border-stone-200 rounded-lg px-3 py-1.5 hover:bg-stone-50"
               >
-                ログアウト
+                マイページ
               </button>
             </>
           ) : (
