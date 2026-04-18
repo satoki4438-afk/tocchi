@@ -445,9 +445,16 @@ export default function Home() {
 
       {/* フッター */}
       <footer style={{ borderTop: '1px solid #e7e5e4', padding: '32px' }}>
-        <div className="flex items-center justify-between text-xs text-stone-400" style={W}>
-          <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontWeight: 900 }}>Tocchi</span>
-          <span>© 2026 TAS Studio</span>
+        <div style={W}>
+          <div className="flex items-center justify-between text-xs text-stone-400 mb-4">
+            <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontWeight: 900 }}>Tocchi</span>
+            <span>© 2026 TAS Studio</span>
+          </div>
+          <div className="flex gap-5 text-xs text-stone-400">
+            <a href="/legal/tokusho" className="hover:text-stone-600">特定商取引法に基づく表記</a>
+            <a href="/legal/privacy" className="hover:text-stone-600">プライバシーポリシー</a>
+            <a href="/legal/terms" className="hover:text-stone-600">利用規約</a>
+          </div>
         </div>
       </footer>
     </main>
