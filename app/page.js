@@ -31,63 +31,12 @@ function SearchBox() {
     }, 400)
   }, [query])
 
-  const proceedFree = (item) => {
-    localStorage.setItem('tocchi_free_used', 'true')
-    router.push(`/dashboard?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}&access=free`)
-  }
-
-  const proceedStripe = async (item, amount) => {
-    const res = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ address: item.address, lat: item.lat, lng: item.lng, amount }),
-    })
-    const data = await res.json()
-    if (data.url) { window.location.href = data.url }
-    else { setError('決済の開始に失敗しました') }
-  }
-
-  const proceed = async (item) => {
+  const proceed = (item) => {
     if (item.addressCode?.length === 5) {
       setError('もう少し詳しい住所を入力してください（例：渋谷区神南一丁目）')
       return
     }
-
-    // 未ログイン
-    if (!user) {
-      if (!isFreeUsed) {
-        proceedFree(item)
-      } else {
-        router.push(`/login?redirect=${encodeURIComponent('/')}`)
-      }
-      return
-    }
-
-    // ログイン済み
-    setLoading(true)
-    setError('')
-    try {
-      const idToken = await user.getIdToken()
-      const res = await fetch('/api/user/check-access', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      })
-      const data = await res.json()
-
-      if (data.status === 'free' || data.status === 'monthly') {
-        router.push(`/dashboard?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}&access=auth`)
-      } else if (data.status === 'need_payment_100') {
-        await proceedStripe(item, 100)
-      } else {
-        // TODO: Stripe側の商品名・領収書表示は管理画面で要更新（旧¥200→新¥300）
-        await proceedStripe(item, 300)
-      }
-    } catch {
-      setError('エラーが発生しました')
-    } finally {
-      setLoading(false)
-    }
+    router.push(`/confirm?address=${encodeURIComponent(item.address)}&lat=${item.lat}&lng=${item.lng}`)
   }
 
   const handleSelect = (item) => {
@@ -157,7 +106,7 @@ function SearchBox() {
           className="bg-stone-900 text-white rounded-xl font-semibold hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap text-sm"
           style={{ height: '52px', padding: '0 24px' }}
         >
-          {loading ? '検索中...' : user ? '検索する' : isFreeUsed ? 'ログインして検索' : '無料で1件試す'}
+          {loading ? '検索中...' : user ? '検索する' : isFreeUsed ? '地点を確認する' : '無料で1件試す'}
         </button>
       </div>
       {error && <p className="mt-3 text-sm text-red-500 text-center">{error}</p>}
@@ -167,8 +116,8 @@ function SearchBox() {
 
 const BENEFITS = [
   {
-    title: '周辺相場がわかる',
-    desc: '国土交通省の公示地価・実取引データから周辺の価格水準を即表示。根拠ある価格交渉が可能に。',
+    title: '相場・価格情報',
+    desc: '国土交通省の公示地価・実取引データから周辺の価格水準を即表示。価格根拠を数字で示せる。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
@@ -176,8 +125,8 @@ const BENEFITS = [
     ),
   },
   {
-    title: '用途地域・法令がわかる',
-    desc: '用途地域・建ぺい率・容積率・接道道路を自動取得。重要事項の確認作業が大幅に短縮される。',
+    title: '用途地域・法令情報',
+    desc: '用途地域・建ぺい率・容積率を自動取得。重要事項の確認作業を大幅に短縮できる。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
         <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -186,8 +135,8 @@ const BENEFITS = [
     ),
   },
   {
-    title: 'ハザードリスクがわかる',
-    desc: '洪水・津波・土砂・高潮・災害危険区域の5種を一括判定。購入前のリスク確認をワンストップで。',
+    title: 'ハザード情報',
+    desc: '洪水・津波・土砂・高潮など8種を一括判定。国交省の公開データをもとに自動収集。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -197,8 +146,8 @@ const BENEFITS = [
     ),
   },
   {
-    title: '学区・周辺施設がわかる',
-    desc: '小中学校の学区を公的データで表示。病院・スーパー・コンビニ・駅の距離も自動取得。',
+    title: '周辺施設・学区',
+    desc: '小中学校の学区を公的データで表示。病院・スーパー・コンビニ・駅の最寄り距離も自動取得。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
         <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
@@ -206,13 +155,35 @@ const BENEFITS = [
       </svg>
     ),
   },
+  {
+    title: '接道候補',
+    desc: 'OpenStreetMapをもとに周辺道路の種別・幅員候補を表示。自治体資料・道路台帳との照合の出発点に。',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
+        <path d="M8 3L6 21M16 21L18 3M6 21h12M8 3h8" />
+        <line x1="7.5" y1="10" x2="16.5" y2="10" strokeDasharray="2 2" />
+        <line x1="7" y1="15" x2="17" y2="15" strokeDasharray="2 2" />
+      </svg>
+    ),
+  },
+  {
+    title: 'AI要点整理',
+    desc: '収集したデータをもとにAIが重説前のチェックポイントを整理。コピペ用メモとして活用できる。',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-8 h-8">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1" />
+        <path d="M9 12h6M9 16h4" />
+      </svg>
+    ),
+  },
 ]
 
 const USECASES = [
   {
-    target: '不動産営業の方へ',
+    target: '1〜5人規模の売買仲介会社',
     title: '重説の下調べが30秒に',
-    desc: '住所を入れるだけで、用途地域・ハザード・相場データが揃う。下調べにかかっていた時間を商談に回せる。',
+    desc: '住所を入れるだけで用途地域・ハザード・相場データが揃う。外回りの合間にスマホでも確認できる。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-7 h-7">
         <path d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
@@ -221,24 +192,26 @@ const USECASES = [
     ),
   },
   {
-    target: '家を買う方へ',
-    title: '安全な土地か一発確認',
-    desc: 'ハザードマップを自分で調べる必要なし。洪水・土砂・津波リスクを住所入力だけで確認できる。',
+    target: '重説前の下調べを早くしたい宅建士',
+    title: 'バラバラな確認作業を1画面に集約',
+    desc: '国交省・ハザードマップ・Googleマップを個別に開く必要なし。1件あたりの調査時間を短縮できる。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-7 h-7">
-        <circle cx="11" cy="11" r="8" />
-        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" />
+        <rect x="9" y="3" width="6" height="4" rx="1" />
+        <path d="M9 12h6M9 16h4" />
       </svg>
     ),
   },
   {
-    target: '土地を売る方へ',
-    title: '適正価格の根拠をすぐ出せる',
-    desc: '公示地価・実取引価格を即表示。「この価格の根拠」を数字で示せるから交渉がスムーズになる。',
+    target: '新人営業の調査メモを標準化したい会社',
+    title: '調査の抜け漏れをAIが補助',
+    desc: 'AI要点整理が重説前のチェックポイントを自動リストアップ。経験の浅いスタッフでも均一な調査品質を保てる。',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-7 h-7">
-        <line x1="12" y1="1" x2="12" y2="23" />
-        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
       </svg>
     ),
   },
@@ -248,24 +221,6 @@ const PLANS = [
   { name: 'お試し',   price: '無料',   unit: '1回お試し', note: 'ログイン不要' },
   { name: 'スポット', price: '¥300',   unit: '/ 件',     note: 'Stripeで即決済' },
   { name: 'ライト',   price: '¥2,980', unit: '/ 月',     note: '近日公開' },
-]
-
-const STEPS = [
-  {
-    num: '01',
-    title: '住所を入力する',
-    desc: '調べたい物件の住所を入力するだけ。サジェストから選ぶだけでOK。',
-  },
-  {
-    num: '02',
-    title: '情報が一画面に揃う',
-    desc: '相場・用途地域・ハザード・周辺施設が自動で取得され、地図付きで表示される。',
-  },
-  {
-    num: '03',
-    title: '印刷・共有できる',
-    desc: '調査結果をそのまま印刷。A4横レイアウトで地図もパネルも1枚に収まる。',
-  },
 ]
 
 const W = { maxWidth: '1100px', margin: '0 auto' }
@@ -307,10 +262,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-stone-800">
 
-      {/* 固定ヘッダー */}
       <Header />
-
-      {/* ヘッダー分のスペース */}
       <div style={{ height: '56px' }} />
 
       {/* ヒーロー */}
@@ -321,12 +273,13 @@ export default function Home() {
         }} />
         <div className="absolute pointer-events-none" style={{ top: '0%', left: '60%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%)', borderRadius: '50%' }} />
 
-        <div className="relative flex flex-col items-center text-center px-6 py-20" style={{ zIndex: 10 }}>
-          <h1 className="text-white font-bold leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.02em' }}>
-            住所ひとつで、物件調査メモを自動整理
+        <div className="relative flex flex-col items-center text-center px-6 py-24" style={{ zIndex: 10 }}>
+          <h1 className="text-white font-bold leading-tight" style={{ fontSize: 'clamp(2.4rem, 6vw, 4.5rem)', letterSpacing: '-0.03em' }}>
+            住所ひとつで、<br />物件調査メモを自動整理
           </h1>
-          <p className="mt-4 text-stone-300" style={{ fontSize: '18px', maxWidth: '520px' }}>
-            用途地域・ハザード・地価・学区・周辺施設・接道候補を自動収集。重説前の情報整理を、ひとつのツールで。
+          <p className="mt-6 text-stone-300" style={{ fontSize: '18px', maxWidth: '560px', lineHeight: '1.9' }}>
+            用途地域・ハザード・地価・学区・周辺施設・接道候補を自動収集。<br />
+            重説前の情報整理を、ひとつのツールで。
           </p>
           <div className="mt-10 w-full px-4">
             <SearchBox />
@@ -335,38 +288,32 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 使い方3ステップ */}
-      <section style={{ padding: '96px 32px', background: '#fafaf9' }}>
-        <div style={{ ...W, maxWidth: '560px' }}>
-          <h2 className="text-center font-bold text-stone-800 mb-16" style={{ fontSize: '26px' }}>3ステップで完結</h2>
-          <div className="flex flex-col">
-            {STEPS.map(({ num, title, desc }, i) => (
-              <div key={num} className="flex gap-6">
-                {/* 左：番号＋縦線 */}
-                <div className="flex flex-col items-center" style={{ minWidth: '40px' }}>
-                  <div className="flex items-center justify-center font-bold text-stone-800 bg-white border-2 border-stone-300 rounded-full flex-shrink-0" style={{ width: '40px', height: '40px', fontSize: '13px', fontFamily: "'Arial Black', sans-serif" }}>
-                    {num}
-                  </div>
-                  {i < STEPS.length - 1 && (
-                    <div style={{ width: '2px', flex: 1, minHeight: '40px', background: '#e7e5e4', margin: '6px 0' }} />
-                  )}
-                </div>
-                {/* 右：テキスト */}
-                <div style={{ paddingBottom: i < STEPS.length - 1 ? '36px' : 0 }}>
-                  <h3 className="font-bold text-stone-800" style={{ fontSize: '17px', marginBottom: '6px' }}>{title}</h3>
-                  <p className="text-stone-500 text-sm leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
+      {/* 実際の画面 */}
+      <section style={{ padding: '80px 32px', background: '#fafaf9' }}>
+        <div style={W}>
+          <h2 className="text-center font-bold text-stone-800 mb-3" style={{ fontSize: '26px' }}>実際の画面</h2>
+          <p className="text-center text-stone-500 text-sm mb-12">住所を入力すると、このような画面が表示されます</p>
+          <div className="rounded-2xl overflow-hidden shadow-2xl border border-stone-200">
+            <div className="flex items-center gap-2 px-4 py-3" style={{ background: '#f5f4f2', borderBottom: '1px solid #e7e5e4' }}>
+              <div className="w-3 h-3 rounded-full" style={{ background: '#fca5a5' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: '#fcd34d' }} />
+              <div className="w-3 h-3 rounded-full" style={{ background: '#86efac' }} />
+              <div className="ml-4 flex-1 rounded-md px-3 py-1 text-xs text-stone-400" style={{ background: '#ece9e4', maxWidth: '320px' }}>tocchi.vercel.app/dashboard</div>
+            </div>
+            <img
+              src="/dashboard-screenshot.png"
+              alt="Tocchi ダッシュボード画面"
+              style={{ width: '100%', display: 'block' }}
+            />
           </div>
         </div>
       </section>
 
-      {/* ベネフィット4本柱 */}
+      {/* できること */}
       <section id="benefits" style={{ padding: '96px 32px', background: '#fff' }}>
         <div style={W}>
-          <h2 className="text-center font-bold text-stone-800 mb-16" style={{ fontSize: '26px' }}>一画面で4つの情報が揃う</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          <h2 className="text-center font-bold text-stone-800 mb-16" style={{ fontSize: '26px' }}>重説前に見るべき情報を、一画面に集約</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
             {BENEFITS.map(({ title, desc, icon }) => (
               <div key={title} className="flex flex-col items-start gap-4">
                 <div className="text-stone-700">{icon}</div>
@@ -380,7 +327,7 @@ export default function Home() {
 
       <div style={{ height: '1px', background: '#f0efed', margin: '0 32px' }} />
 
-      {/* ユースケース */}
+      {/* こんな方に */}
       <section id="usecases" style={{ padding: '96px 32px', background: '#fff' }}>
         <div style={W}>
           <h2 className="text-center font-bold text-stone-800 mb-16" style={{ fontSize: '26px' }}>こんな方に使われています</h2>
@@ -389,7 +336,7 @@ export default function Home() {
               <div key={target} className="rounded-2xl p-8 flex flex-col gap-4" style={{ background: '#fafaf9', border: '1px solid #e7e5e4' }}>
                 <div className="text-stone-500">{icon}</div>
                 <div>
-                  <p className="font-semibold text-stone-400 mb-1" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{target}</p>
+                  <p className="font-semibold text-stone-400 mb-1" style={{ fontSize: '11px', letterSpacing: '0.06em' }}>{target}</p>
                   <h3 className="font-bold text-stone-800" style={{ fontSize: '16px' }}>{title}</h3>
                 </div>
                 <p className="text-stone-500 text-sm leading-relaxed">{desc}</p>
@@ -414,31 +361,6 @@ export default function Home() {
                 <p className="text-stone-400 text-xs mt-1">{note}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ダッシュボードイメージ */}
-      <section style={{ padding: '96px 32px', background: '#fff' }}>
-        <div style={W}>
-          <h2 className="text-center font-bold text-stone-800 mb-4" style={{ fontSize: '26px' }}>実際の画面</h2>
-          <p className="text-center text-stone-500 text-sm mb-12">住所を入力すると、このような画面が表示されます</p>
-
-          {/* ブラウザ風モックアップ */}
-          <div className="rounded-2xl overflow-hidden shadow-2xl border border-stone-200">
-            {/* ブラウザバー */}
-            <div className="flex items-center gap-2 px-4 py-3" style={{ background: '#f5f4f2', borderBottom: '1px solid #e7e5e4' }}>
-              <div className="w-3 h-3 rounded-full" style={{ background: '#fca5a5' }} />
-              <div className="w-3 h-3 rounded-full" style={{ background: '#fcd34d' }} />
-              <div className="w-3 h-3 rounded-full" style={{ background: '#86efac' }} />
-              <div className="ml-4 flex-1 rounded-md px-3 py-1 text-xs text-stone-400" style={{ background: '#ece9e4', maxWidth: '320px' }}>tocchi.vercel.app/dashboard</div>
-            </div>
-            {/* ダッシュボードスクリーンショット */}
-            <img
-              src="/dashboard-screenshot.png"
-              alt="Tocchi ダッシュボード画面"
-              style={{ width: '100%', display: 'block' }}
-            />
           </div>
         </div>
       </section>
