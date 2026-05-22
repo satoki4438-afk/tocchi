@@ -21,6 +21,7 @@ export async function GET(request) {
       const params = new URLSearchParams({
         year: String(y),
         area: prefCd,
+        quarter: String(quarter),
         ...(city ? { city } : {}),
       })
       const url = `https://www.reinfolib.mlit.go.jp/ex-api/external/XIT001?${params}`
@@ -36,6 +37,8 @@ export async function GET(request) {
     }
     if (allItems.length >= 20) break
   }
+
+  // TODO: city フォールバック — city指定で0件の場合、prefCdのみで再取得する
 
   return Response.json({ items: allItems.slice(0, 30) })
 }

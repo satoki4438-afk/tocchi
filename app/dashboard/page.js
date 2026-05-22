@@ -60,7 +60,7 @@ function buildSummaryData(data) {
     if (isNaN(n)) return '—'
     return n >= 10000 ? `${(n / 10000).toFixed(0)}万円` : `${n.toLocaleString()}円`
   }
-  const tradeItems = (data.trade?.items || []).slice(0, 3).map(t => ({
+  const tradeItems = (data.trade?.items || []).slice(0, 5).map(t => ({
     type: t.Type || '—',
     year: t.Year || '—',
     price: fmtPrice(t.TradePrice),
