@@ -275,7 +275,7 @@ function DashboardContent() {
         </div>
       </header>
 
-      <div className="w-full px-6 py-4">
+      <div className="w-full px-6 py-3">
         {!allLoaded && (
           <div className="mb-3 text-xs text-stone-400 text-center print-hidden">
             情報を取得しています...
@@ -283,7 +283,7 @@ function DashboardContent() {
         )}
 
         {/* 地図：全幅 */}
-        <div className="bg-white rounded-lg border border-stone-200 overflow-hidden mb-4 print-map" style={{ height: '60vh' }}>
+        <div className="bg-white rounded-lg border border-stone-200 overflow-hidden mb-3 print-map" style={{ height: 'min(50vh, 480px)', minHeight: '280px' }}>
           {lat && lng && (
             <MapView
               lat={lat} lng={lng} address={address}
@@ -298,7 +298,7 @@ function DashboardContent() {
         </div>
 
         {/* パネル：2×2グリッド */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 print-panels" style={{ gap: '16px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 print-panels" style={{ gap: '10px' }}>
           <PricePanel trade={data.trade} landprice={data.landprice} />
           <ZoningPanel zoning={data.zoning} road={data.road} />
           <HazardPanel hazard={data.hazard} />
@@ -306,13 +306,13 @@ function DashboardContent() {
         </div>
 
         {/* AI要点整理 */}
-        <div style={{ marginTop: '16px' }}>
-          <div className="print-hidden">
+        <div style={{ marginTop: '10px' }}>
+          <div className="print-hidden flex flex-col items-center">
             <button
               onClick={generateSummary}
               disabled={!allLoaded || summaryLoading || summaryGenerated}
-              className="w-full rounded-xl border border-stone-300 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ padding: '12px 0', fontSize: '14px', color: summaryGenerated ? '#a8a29e' : '#1c1917', background: summaryGenerated ? '#fafaf9' : '#fff' }}
+              className="rounded-lg border border-stone-300 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ padding: '7px 20px', fontSize: '13px', color: summaryGenerated ? '#a8a29e' : '#1c1917', background: summaryGenerated ? '#fafaf9' : '#fff' }}
             >
               {summaryLoading ? 'AI要点整理を作成中...' : summaryGenerated ? '生成済み' : 'AI要点整理を生成'}
             </button>
@@ -332,8 +332,8 @@ function DashboardContent() {
         </div>
 
         {/* 公式確認リンク */}
-        <div className="print-hidden" style={{ marginTop: '16px' }}>
-          <div className="bg-white rounded-xl border border-stone-200" style={{ padding: '16px 20px' }}>
+        <div className="print-hidden" style={{ marginTop: '10px' }}>
+          <div className="bg-white rounded-xl border border-stone-200" style={{ padding: '12px 16px' }}>
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-stone-800" style={{ fontSize: '14px' }}>🏛️ 公式確認リンク</h3>
               {mLinks && (
@@ -351,7 +351,7 @@ function DashboardContent() {
             </button>
 
             {mLinks ? (
-              <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '2px' }}>
                 {LINK_KEYS.map(key => {
                   const link = mLinks.links[key]
                   if (!link) return null
@@ -364,12 +364,12 @@ function DashboardContent() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
-                      style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
+                      className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors min-w-0"
+                      style={{ padding: '6px 10px', fontSize: '12px', color: '#1c1917', textDecoration: 'none' }}
                     >
-                      <span>{link.label}</span>
-                      <span className="text-stone-400" style={{ fontSize: '11px' }}>
-                        {link.url ? '開く →' : '公式サイトで確認 →'}
+                      <span className="truncate mr-2">{link.label}</span>
+                      <span className="text-stone-400 flex-shrink-0" style={{ fontSize: '11px' }}>
+                        {link.url ? '開く →' : '確認 →'}
                       </span>
                     </a>
                   )
@@ -378,35 +378,37 @@ function DashboardContent() {
                   href={mLinks.officialSite}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
-                  style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
+                  className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors min-w-0"
+                  style={{ padding: '6px 10px', fontSize: '12px', color: '#1c1917', textDecoration: 'none' }}
                 >
-                  <span>自治体公式サイト</span>
-                  <span className="text-stone-400" style={{ fontSize: '11px' }}>開く →</span>
+                  <span className="truncate mr-2">自治体公式サイト</span>
+                  <span className="text-stone-400 flex-shrink-0" style={{ fontSize: '11px' }}>開く →</span>
                 </a>
               </div>
             ) : (
               <div>
-                <p className="text-stone-400" style={{ fontSize: '12px', padding: '0 4px 8px' }}>
+                <p className="text-stone-400" style={{ fontSize: '11px', padding: '0 4px 6px' }}>
                   この自治体は未対応です。住所をコピーして各窓口にお問い合わせください。
                 </p>
-                {[
-                  { label: '指定道路図を検索', q: ' 指定道路図' },
-                  { label: '都市計画図を検索', q: ' 都市計画図' },
-                  { label: 'ハザードマップを検索', q: ' ハザードマップ' },
-                ].map(({ label, q }) => (
-                  <a
-                    key={q}
-                    href={`https://www.google.com/search?q=${encodeURIComponent((address || '') + q)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
-                    style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
-                  >
-                    <span>{label}</span>
-                    <span className="text-stone-400" style={{ fontSize: '11px' }}>Google検索 →</span>
-                  </a>
-                ))}
+                <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: '2px' }}>
+                  {[
+                    { label: '指定道路図を検索', q: ' 指定道路図' },
+                    { label: '都市計画図を検索', q: ' 都市計画図' },
+                    { label: 'ハザードマップを検索', q: ' ハザードマップ' },
+                  ].map(({ label, q }) => (
+                    <a
+                      key={q}
+                      href={`https://www.google.com/search?q=${encodeURIComponent((address || '') + q)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors min-w-0"
+                      style={{ padding: '6px 10px', fontSize: '12px', color: '#1c1917', textDecoration: 'none' }}
+                    >
+                      <span className="truncate mr-2">{label}</span>
+                      <span className="text-stone-400 flex-shrink-0" style={{ fontSize: '11px' }}>検索 →</span>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
