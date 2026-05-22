@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 function SearchBox() {
   const [query, setQuery] = useState('')
@@ -259,6 +260,23 @@ function Header() {
 }
 
 export default function Home() {
+  if (BETA_CLOSED) {
+    return (
+      <main className="min-h-screen bg-white flex flex-col items-center justify-center px-6 text-center">
+        <span style={{ fontFamily: "'Arial Black', 'Helvetica Neue', sans-serif", fontSize: '24px', fontWeight: 900, color: '#1c1917', letterSpacing: '-0.5px', marginBottom: '32px', display: 'block' }}>
+          Tocchi
+        </span>
+        <h1 className="font-bold text-stone-800 mb-4" style={{ fontSize: '22px' }}>現在ベータ調整中です</h1>
+        <p className="text-stone-500 mb-6" style={{ fontSize: '15px', maxWidth: '480px', lineHeight: '1.8' }}>
+          物件調査メモ機能の本番確認中のため、<br />現在は一般利用を一時停止しています。<br />再開までしばらくお待ちください。
+        </p>
+        <p className="text-stone-400" style={{ fontSize: '12px', maxWidth: '480px', lineHeight: '1.8' }}>
+          ※本サービスは公開データおよび外部APIをもとにした参考情報を整理するツールです。重要事項説明書への転記前には、必ず原典資料・自治体資料・現地確認を行ってください。
+        </p>
+      </main>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-white text-stone-800">
 

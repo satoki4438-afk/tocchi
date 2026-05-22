@@ -9,6 +9,7 @@ import ZoningPanel from '@/components/panels/ZoningPanel'
 import HazardPanel from '@/components/panels/HazardPanel'
 import NearbyPanel from '@/components/panels/NearbyPanel'
 import { getMunicipalityLinks } from '@/lib/municipalityLinks'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 const LINK_KEYS = ['roadMap', 'cityPlanMap', 'hazardMap', 'firePrevention', 'waterSewer', 'culturalAssets']
 
@@ -230,6 +231,19 @@ function DashboardContent() {
     } finally {
       setSummaryLoading(false)
     }
+  }
+
+  if (BETA_CLOSED) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-stone-600">現在ベータ調整中です。</p>
+          <button onClick={() => router.push('/')} className="px-6 py-2 bg-stone-800 text-white rounded-lg text-sm">
+            トップへ戻る
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (verifyError) {

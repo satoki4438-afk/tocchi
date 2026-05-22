@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import dynamic from 'next/dynamic'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 const ConfirmMap = dynamic(() => import('@/components/ConfirmMap'), { ssr: false })
 
@@ -94,6 +95,19 @@ function ConfirmContent() {
     if (loading) return '確認中...'
     if (!user) return isFreeUsed ? 'ログインして調査する' : '無料でこの地点を調査する（1回）'
     return 'この地点で調査する'
+  }
+
+  if (BETA_CLOSED) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-stone-600">現在ベータ調整中です。</p>
+          <button onClick={() => router.push('/')} className="px-6 py-2 bg-stone-800 text-white rounded-lg text-sm">
+            トップへ戻る
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (!address || isNaN(initLat) || isNaN(initLng)) return null
