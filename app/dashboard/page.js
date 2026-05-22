@@ -283,7 +283,7 @@ function DashboardContent() {
         )}
 
         {/* 地図：全幅 */}
-        <div className="bg-white rounded-lg border border-stone-200 overflow-hidden mb-3 print-map" style={{ height: 'min(50vh, 480px)', minHeight: '280px' }}>
+        <div className="bg-white rounded-lg border border-stone-200 overflow-hidden mb-3 print-map" style={{ height: 'min(45vh, 440px)', minHeight: '280px' }}>
           {lat && lng && (
             <MapView
               lat={lat} lng={lng} address={address}
