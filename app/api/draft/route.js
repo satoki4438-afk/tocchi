@@ -14,7 +14,12 @@ const SYSTEM_PROMPT = `あなたは不動産の物件調査メモ作成を補助
 - 法的判断・専門的助言・建築可否・再建築可否の断定
 - 「問題なし」「問題ない」「安全」「大丈夫」「確定」「建築可能」「再建築可能」「接道あり」「適合」などの断定表現
 必ず「参考情報」「要確認」「原典資料確認」「自治体確認」「現地確認」の文脈で記載してください。
-重要事項説明書への転記前には、必ず宅地建物取引士が原典資料を確認し、最終的な判断を行ってください。`
+重要事項説明書への転記前には、必ず宅地建物取引士が原典資料を確認し、最終的な判断を行ってください。
+【役所で確認すること】では以下を参考に記載してください（取得済みデータがあれば「参考値あり・現地確認推奨」と明記し、未取得は「要確認」）：
+- 建築指導課：前面道路の建築基準法上の道路種別・幅員・接道長さ・セットバック要否
+- 都市計画課：都市計画道路・防火準防火地域・高度地区・地区計画
+- 上下水道担当課：前面配管の有無・引込状況・口径
+- 文化財担当課：埋蔵文化財包蔵地の該当有無`
 
 export async function POST(request) {
   let address, summaryData
@@ -35,7 +40,8 @@ export async function POST(request) {
   try {
     const message = await client.messages.create({
       model: MODEL,
-      max_tokens: 800,
+      // TODO: Vercel Hobby 10s タイムアウトが出る場合は 800 に戻す
+      max_tokens: 900,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
@@ -132,6 +138,7 @@ function buildPrompt(address, d) {
   lines.push('【重説前に確認したいポイント】')
   lines.push('【接道に関する確認事項】')
   lines.push('【不足・要確認データ】')
+  lines.push('【役所で確認すること】')
   lines.push('【コピペ用メモ】')
 
   return lines.join('\n')

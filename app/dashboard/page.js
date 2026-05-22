@@ -8,6 +8,9 @@ import PricePanel from '@/components/panels/PricePanel'
 import ZoningPanel from '@/components/panels/ZoningPanel'
 import HazardPanel from '@/components/panels/HazardPanel'
 import NearbyPanel from '@/components/panels/NearbyPanel'
+import { getMunicipalityLinks } from '@/lib/municipalityLinks'
+
+const LINK_KEYS = ['roadMap', 'cityPlanMap', 'hazardMap', 'firePrevention', 'waterSewer', 'culturalAssets']
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
 
@@ -111,6 +114,8 @@ function DashboardContent() {
   const [summaryLoading, setSummaryLoading] = useState(false)
   const [summaryError, setSummaryError] = useState('')
   const [summaryGenerated, setSummaryGenerated] = useState(false)
+  const [muniCd, setMuniCd] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const doFetch = () => {
     if (fetchedRef.current) return
@@ -127,6 +132,7 @@ function DashboardContent() {
         const match = d.results?.[0]
         const prefCd = match?.prefCd || ''
         const city = match?.muniCd || ''
+        setMuniCd(match?.muniCd || '')
         fetch(`/api/mlit/trade?pref=${prefCd}&city=${city}`)
           .then((r) => r.json())
           .then((v) => setOne('trade', v))
@@ -196,6 +202,14 @@ function DashboardContent() {
       }, 500)
     }, 100)
   }
+
+  const copyAddress = () => {
+    navigator.clipboard.writeText(address)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const mLinks = getMunicipalityLinks(muniCd)
 
   const generateSummary = async () => {
     setSummaryLoading(true)
@@ -315,6 +329,87 @@ function DashboardContent() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* 公式確認リンク */}
+        <div className="print-hidden" style={{ marginTop: '16px' }}>
+          <div className="bg-white rounded-xl border border-stone-200" style={{ padding: '16px 20px' }}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-stone-800" style={{ fontSize: '14px' }}>🏛️ 公式確認リンク</h3>
+              {mLinks && (
+                <span className="text-xs text-stone-400">{mLinks.pref} {mLinks.city}</span>
+              )}
+            </div>
+
+            {/* 住所コピー */}
+            <button
+              onClick={copyAddress}
+              className="w-full text-left rounded-lg border border-stone-200 hover:bg-stone-50 transition-colors"
+              style={{ padding: '8px 12px', marginBottom: '8px', fontSize: '13px', color: copied ? '#059669' : '#1c1917' }}
+            >
+              {copied ? '✓ コピーしました' : '📋 住所をコピー'}
+            </button>
+
+            {mLinks ? (
+              <div>
+                {LINK_KEYS.map(key => {
+                  const link = mLinks.links[key]
+                  if (!link) return null
+                  const href = link.url
+                    ? (link.supportsLatLng ? link.url.replace('{lat}', lat).replace('{lng}', lng) : link.url)
+                    : mLinks.officialSite
+                  return (
+                    <a
+                      key={key}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
+                      style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
+                    >
+                      <span>{link.label}</span>
+                      <span className="text-stone-400" style={{ fontSize: '11px' }}>
+                        {link.url ? '開く →' : '公式サイトで確認 →'}
+                      </span>
+                    </a>
+                  )
+                })}
+                <a
+                  href={mLinks.officialSite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
+                  style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
+                >
+                  <span>自治体公式サイト</span>
+                  <span className="text-stone-400" style={{ fontSize: '11px' }}>開く →</span>
+                </a>
+              </div>
+            ) : (
+              <div>
+                <p className="text-stone-400" style={{ fontSize: '12px', padding: '0 4px 8px' }}>
+                  この自治体は未対応です。住所をコピーして各窓口にお問い合わせください。
+                </p>
+                {[
+                  { label: '指定道路図を検索', q: ' 指定道路図' },
+                  { label: '都市計画図を検索', q: ' 都市計画図' },
+                  { label: 'ハザードマップを検索', q: ' ハザードマップ' },
+                ].map(({ label, q }) => (
+                  <a
+                    key={q}
+                    href={`https://www.google.com/search?q=${encodeURIComponent((address || '') + q)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between rounded-lg hover:bg-stone-50 transition-colors"
+                    style={{ padding: '7px 12px', fontSize: '13px', color: '#1c1917', textDecoration: 'none' }}
+                  >
+                    <span>{label}</span>
+                    <span className="text-stone-400" style={{ fontSize: '11px' }}>Google検索 →</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <p className="mt-4 text-xs text-stone-400 leading-relaxed text-center" style={{ maxWidth: '720px', margin: '16px auto 0' }}>
