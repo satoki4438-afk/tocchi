@@ -51,7 +51,7 @@ export default function ZoningPanel({ zoning, road }) {
 
       <div>
         <p className="text-sm text-stone-500 mb-2 font-medium">
-          接道道路
+          接道候補
           {roads.length > 0 && (
             <span className="ml-1 text-xs bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded">自動取得・参考値</span>
           )}
@@ -73,6 +73,16 @@ export default function ZoningPanel({ zoning, road }) {
             ))}
           </div>
         )}
+      </div>
+
+      <p className="text-xs text-stone-400 leading-relaxed">
+        OSM / Overpass API をもとに周辺道路を表示しています。建築基準法上の道路種別、幅員、接道義務の充足は、自治体資料・道路台帳・現地確認が必要です。
+      </p>
+
+      <div className="border-t border-stone-100 pt-3 space-y-0.5">
+        <p className="text-xs text-stone-400">出典：国土交通省 不動産情報ライブラリ / OpenStreetMap</p>
+        <p className="text-xs text-stone-400">取得日：{new Date().toLocaleDateString('ja-JP')}</p>
+        <p className="text-xs text-stone-400">ステータス：参考情報・要確認</p>
       </div>
     </div>
   )

@@ -69,5 +69,5 @@ export async function POST(request) {
     }
   }
 
-  return Response.json({ status: 'need_payment_200' })
+  return Response.json({ status: 'need_spot_payment' })
 }

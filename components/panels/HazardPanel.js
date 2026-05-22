@@ -53,6 +53,12 @@ export default function HazardPanel({ hazard }) {
       <p className="text-xs text-stone-400">
         ※国土交通省 不動産情報ライブラリ。詳細はハザードマップポータルで確認してください。
       </p>
+
+      <div className="border-t border-stone-100 pt-3 space-y-0.5">
+        <p className="text-xs text-stone-400">出典：国土交通省 不動産情報ライブラリ</p>
+        <p className="text-xs text-stone-400">取得日：{new Date().toLocaleDateString('ja-JP')}</p>
+        <p className="text-xs text-stone-400">ステータス：参考情報・要確認</p>
+      </div>
     </div>
   )
 }

@@ -17,7 +17,7 @@ export default function TermsPage() {
             <h2 className="font-semibold text-stone-800 mb-3" style={{ fontSize: '16px' }}>2. 料金・支払い</h2>
             <ul className="ml-4 space-y-1 list-disc">
               <li>初回のみ無料でご利用いただけます（ログイン不要）</li>
-              <li>2回目以降は都度プラン（¥200/回）またはスタンダードプラン（¥980/月・月10回）をご利用ください</li>
+              <li>2回目以降はスポットプラン（¥300/件）またはライトプラン（¥2,980/月）をご利用ください</li>
               <li>決済はStripeを通じてクレジットカードで行います</li>
             </ul>
           </section>
@@ -34,7 +34,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-semibold text-stone-800 mb-3" style={{ fontSize: '16px' }}>4. 免責事項</h2>
-            <p>当サービスが提供する情報は参考情報であり、最終的な判断はご自身の責任で行ってください。情報の誤りや損害について、当社は一切の責任を負いません。</p>
+            <p>本サービスが提供する情報は、国土交通省等の公開データおよび外部APIをもとに自動集計した参考情報です。情報の正確性・完全性・最新性を保証するものではありません。重要事項説明書の作成にあたっては、必ず宅地建物取引士が原典資料を確認し、最終的な判断を行ってください。本サービスは参考情報の提供を目的としており、法的判断・専門的助言を行うものではありません。</p>
           </section>
 
           <section>

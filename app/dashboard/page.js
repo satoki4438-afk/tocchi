@@ -11,6 +11,77 @@ import NearbyPanel from '@/components/panels/NearbyPanel'
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false })
 
+function buildSummaryData(data) {
+  const u = data.zoning?.urban?.[0]?.properties
+  const z = data.zoning?.zoning?.[0]?.properties
+  const zoning = {
+    useArea: u?.use_area_ja || z?.area_classification_ja || null,
+    buildingCoverageRatio: u?.u_building_coverage_ratio_ja || null,
+    floorAreaRatio: u?.u_floor_area_ratio_ja || null,
+  }
+
+  const HAZARD_LABELS = {
+    flood: '洪水浸水想定区域', hightide: '高潮浸水想定区域',
+    tsunami: '津波浸水想定区域', sediment: '土砂災害警戒区域',
+    danger: '災害危険区域', steep: '急傾斜地崩壊危険区域',
+    landslide: '地すべり防止区域', embankment: '大規模盛土造成地',
+  }
+  const h = data.hazard?.hazard || {}
+  const hazard = {}
+  for (const [key, label] of Object.entries(HAZARD_LABELS)) {
+    const features = h[key] || []
+    hazard[key] = {
+      label,
+      hit: features.length > 0,
+      detail: features[0]?.properties?.A31b_201 || features[0]?.properties?.rank || features[0]?.properties?.name || null,
+    }
+  }
+
+  const HIGHWAY_LABEL = {
+    trunk: '主要幹線道路', primary: '国道', secondary: '県道',
+    tertiary: '市道', residential: '住宅街道路',
+    service: 'サービス道路', unclassified: '一般道',
+  }
+  const roads = (data.road?.roads || []).slice(0, 2).map(r => ({
+    name: r.name || HIGHWAY_LABEL[r.highway] || r.highway || '不明',
+    width: r.width,
+    widthSource: r.widthSource,
+    oneway: r.oneway,
+  }))
+
+  const lf = data.landprice?.features?.[0]
+  const landprice = lf ? {
+    location: lf.properties?.location || lf.properties?.standard_lot_number_ja || '最近接地点',
+    price: lf.properties?.u_current_years_price_ja || null,
+  } : null
+
+  const fmtPrice = (val) => {
+    const n = parseInt(val, 10)
+    if (isNaN(n)) return '—'
+    return n >= 10000 ? `${(n / 10000).toFixed(0)}万円` : `${n.toLocaleString()}円`
+  }
+  const tradeItems = (data.trade?.items || []).slice(0, 3).map(t => ({
+    type: t.Type || '—',
+    year: t.Year || '—',
+    price: fmtPrice(t.TradePrice),
+  }))
+
+  const ep = data.school?.elementary?.[0]?.properties
+  const jp = data.school?.junior?.[0]?.properties
+  const school = {
+    elementary: ep?.A27_004_ja || ep?.name || null,
+    junior: jp?.A32_004_ja || jp?.name || null,
+  }
+
+  const nearby = (data.places?.categories || []).map(cat => {
+    const first = cat.places?.[0]
+    if (!first) return null
+    return { label: cat.label, name: first.name, distance: first.distance }
+  }).filter(Boolean)
+
+  return { zoning, hazard, roads, landprice, tradeItems, school, nearby }
+}
+
 function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -36,6 +107,10 @@ function DashboardContent() {
     hazard: true, school: true, places: true, road: true,
   })
   const fetchedRef = useRef(false)
+  const [summary, setSummary] = useState(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+  const [summaryError, setSummaryError] = useState('')
+  const [summaryGenerated, setSummaryGenerated] = useState(false)
 
   const doFetch = () => {
     if (fetchedRef.current) return
@@ -122,6 +197,27 @@ function DashboardContent() {
     }, 100)
   }
 
+  const generateSummary = async () => {
+    setSummaryLoading(true)
+    setSummaryError('')
+    try {
+      const summaryData = buildSummaryData(data)
+      const res = await fetch('/api/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, summaryData }),
+      })
+      const json = await res.json()
+      if (json.error) { setSummaryError(json.error); return }
+      setSummary(json.summary)
+      setSummaryGenerated(true)
+    } catch {
+      setSummaryError('AI要点整理の生成に失敗しました。')
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
+
   if (verifyError) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
@@ -194,6 +290,36 @@ function DashboardContent() {
           <HazardPanel hazard={data.hazard} />
           <NearbyPanel places={data.places} school={data.school} />
         </div>
+
+        {/* AI要点整理 */}
+        <div style={{ marginTop: '16px' }}>
+          <div className="print-hidden">
+            <button
+              onClick={generateSummary}
+              disabled={!allLoaded || summaryLoading || summaryGenerated}
+              className="w-full rounded-xl border border-stone-300 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ padding: '12px 0', fontSize: '14px', color: summaryGenerated ? '#a8a29e' : '#1c1917', background: summaryGenerated ? '#fafaf9' : '#fff' }}
+            >
+              {summaryLoading ? 'AI要点整理を作成中...' : summaryGenerated ? '生成済み' : 'AI要点整理を生成'}
+            </button>
+            {summaryError && (
+              <p className="mt-2 text-sm text-red-500 text-center">{summaryError}</p>
+            )}
+          </div>
+          {summary && (
+            <div className="bg-white rounded-xl border border-stone-200" style={{ marginTop: '12px', padding: '20px 24px' }}>
+              <h3 className="font-semibold text-stone-800" style={{ fontSize: '14px', marginBottom: '12px' }}>AI要点整理</h3>
+              <p className="text-stone-700 leading-relaxed" style={{ fontSize: '13px', whiteSpace: 'pre-wrap' }}>{summary}</p>
+              <p className="text-stone-400" style={{ fontSize: '11px', marginTop: '12px' }}>
+                このAI要点整理は参考情報です。法的判断・専門的助言を含みません。転記前に宅地建物取引士による確認が必要です。
+              </p>
+            </div>
+          )}
+        </div>
+
+        <p className="mt-4 text-xs text-stone-400 leading-relaxed text-center" style={{ maxWidth: '720px', margin: '16px auto 0' }}>
+          本サービスの情報は公開データおよび外部APIをもとにした参考情報です。重要事項説明書への転記前に、必ず原典資料・自治体資料・現地確認を行ってください。
+        </p>
       </div>
 
       {/* 印刷モーダル */}

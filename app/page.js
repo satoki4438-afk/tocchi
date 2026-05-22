@@ -80,7 +80,8 @@ function SearchBox() {
       } else if (data.status === 'need_payment_100') {
         await proceedStripe(item, 100)
       } else {
-        await proceedStripe(item, 200)
+        // TODO: Stripe側の商品名・領収書表示は管理画面で要更新（旧¥200→新¥300）
+        await proceedStripe(item, 300)
       }
     } catch {
       setError('エラーが発生しました')
@@ -156,7 +157,7 @@ function SearchBox() {
           className="bg-stone-900 text-white rounded-xl font-semibold hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap text-sm"
           style={{ height: '52px', padding: '0 24px' }}
         >
-          {loading ? '検索中...' : user ? '検索する' : isFreeUsed ? 'ログインして検索' : '無料で試す'}
+          {loading ? '検索中...' : user ? '検索する' : isFreeUsed ? 'ログインして検索' : '無料で1件試す'}
         </button>
       </div>
       {error && <p className="mt-3 text-sm text-red-500 text-center">{error}</p>}
@@ -244,10 +245,9 @@ const USECASES = [
 ]
 
 const PLANS = [
-  { name: 'お試し',       price: '無料',   unit: '1回限り',  note: 'ログイン不要' },
-  { name: '都度プラン',   price: '¥200',   unit: '/ 回',    note: 'Stripeで即決済' },
-  { name: 'スタンダード', price: '¥980',   unit: '/ 月',    note: '近日公開' },
-  { name: 'プロ',         price: '¥2,980', unit: '/ 月',    note: '近日公開' },
+  { name: 'お試し',   price: '無料',   unit: '1回お試し', note: 'ログイン不要' },
+  { name: 'スポット', price: '¥300',   unit: '/ 件',     note: 'Stripeで即決済' },
+  { name: 'ライト',   price: '¥2,980', unit: '/ 月',     note: '近日公開' },
 ]
 
 const STEPS = [
@@ -323,10 +323,10 @@ export default function Home() {
 
         <div className="relative flex flex-col items-center text-center px-6 py-20" style={{ zIndex: 10 }}>
           <h1 className="text-white font-bold leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.02em' }}>
-            住所ひとつで、土地調査
+            住所ひとつで、物件調査メモを自動整理
           </h1>
-          <p className="mt-4 text-stone-300" style={{ fontSize: '18px', maxWidth: '480px' }}>
-            相場・法令・ハザード・周辺施設を一画面に
+          <p className="mt-4 text-stone-300" style={{ fontSize: '18px', maxWidth: '520px' }}>
+            用途地域・ハザード・地価・学区・周辺施設・接道候補を自動収集。重説前の情報整理を、ひとつのツールで。
           </p>
           <div className="mt-10 w-full px-4">
             <SearchBox />
@@ -403,7 +403,7 @@ export default function Home() {
       <section id="pricing" style={{ padding: '96px 32px', background: '#fafaf9' }}>
         <div style={W}>
           <h2 className="text-center font-bold text-stone-800 mb-16" style={{ fontSize: '26px' }}>シンプルな料金体系</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             {PLANS.map(({ name, price, unit, note }) => (
               <div key={name} className="rounded-2xl flex flex-col gap-2" style={{ padding: '28px 24px', background: '#fff', border: '1px solid #e7e5e4' }}>
                 <p className="font-semibold text-stone-400" style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{name}</p>
