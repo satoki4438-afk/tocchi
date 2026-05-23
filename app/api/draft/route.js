@@ -50,8 +50,7 @@ export async function POST(request) {
   try {
     const message = await client.messages.create({
       model: MODEL,
-      // TODO: Vercel Hobby 10s タイムアウトが出る場合は 800 に戻す
-      max_tokens: 900,
+      max_tokens: 780,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
     })
@@ -159,9 +158,10 @@ function buildPrompt(address, d) {
   }
   lines.push('')
 
-  lines.push('上記データをもとに、以下の見出しで物件調査メモとして要点整理してください。')
+  lines.push('上記データをもとに、以下の見出しで物件調査メモを作成してください。')
   lines.push('断定表現は使わず、すべて「参考情報」「要確認」のスタンスで記載してください。')
-  lines.push('各見出しの内容は簡潔に3行以内。Markdown表・##・---・> は使わない。見出しは【】のみ。')
+  lines.push('出力ルール：Markdown表・##・---・> は禁止。見出しは【】のみ。1文を短く。')
+  lines.push('字数制限：【概要】2行まで／【重説前に確認したいポイント】5件まで／【接道に関する確認事項】3行まで／【不足・要確認データ】5件まで／【役所で確認すること】5件まで／【コピペ用メモ】3行まで。')
   lines.push('')
   lines.push('【概要】')
   lines.push('【重説前に確認したいポイント】')
