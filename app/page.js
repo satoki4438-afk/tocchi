@@ -7,6 +7,13 @@ import { auth } from '@/lib/firebase'
 import { useAuth } from '@/context/AuthContext'
 import { BETA_CLOSED } from '@/lib/betaMode'
 
+function getDisplayLabel(address) {
+  if (!address) return address
+  if (/^(東京都|北海道|(?:大阪|京都)府|[一-鿿]{2,3}県)/.test(address)) return address
+  const m = address.match(/(東京都|北海道|(?:大阪|京都)府|[一-鿿]{2,3}県).+/)
+  return m ? m[0].replace(/[）)]\s*$/, '').trim() : address
+}
+
 function SearchBox() {
   const [query, setQuery] = useState('')
   const [suggestions, setSuggestions] = useState([])
@@ -95,7 +102,7 @@ function SearchBox() {
                   onClick={() => { handleSelect(item); proceed(item) }}
                   className="px-5 py-3 text-sm text-stone-700 hover:bg-stone-50 cursor-pointer border-b border-stone-100 last:border-0"
                 >
-                  {item.address}
+                  {getDisplayLabel(item.address)}
                 </li>
               ))}
             </ul>
