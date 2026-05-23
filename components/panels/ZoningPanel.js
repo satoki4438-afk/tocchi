@@ -7,6 +7,7 @@ export default function ZoningPanel({ zoning, road }) {
   const z = zoningFeatures[0]?.properties
   const u = urbanFeatures[0]?.properties
   const fp = fpFeatures[0]?.properties
+  const cp = zoning?.cityPlanningRoad
 
   const roadLabel = (highway) => {
     const map = {
@@ -65,6 +66,29 @@ export default function ZoningPanel({ zoning, road }) {
             </div>
             <p className="text-xs text-stone-400 leading-relaxed">
               該当する場合、防火仕様により建築費へ影響する可能性があります。準耐火建築物・防火設備等の要否は建築士または自治体窓口で確認してください。
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-stone-100 pt-4">
+        <p className="text-sm text-stone-500 mb-2 font-medium">都市計画道路</p>
+        {!cp || cp.nearbyLevel === 'none' ? (
+          <p className="text-sm text-stone-400">このタイル範囲では都市計画道路のデータなし（都市計画課確認推奨）</p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline gap-2">
+              <span className="text-sm text-stone-500">計画線との距離</span>
+              <span className="text-sm font-semibold text-stone-800 text-right">
+                約{cp.minDistanceM}m
+              </span>
+            </div>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              {cp.nearbyLevel === 'near'
+                ? '対象地またはその直近に都市計画道路の計画線がある可能性があります。'
+                : '周辺約100m以内に都市計画道路の計画線がある可能性があります。'
+              }
+              計画線の位置・事業化状況・建築制限の有無は、自治体の都市計画課で確認してください。
             </p>
           </div>
         )}

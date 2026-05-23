@@ -19,11 +19,13 @@ function buildSummaryData(data) {
   const u = data.zoning?.urban?.[0]?.properties
   const z = data.zoning?.zoning?.[0]?.properties
   const fp = data.zoning?.firePrevention?.[0]?.properties
+  const cp = data.zoning?.cityPlanningRoad
   const zoning = {
     useArea: u?.use_area_ja || z?.area_classification_ja || null,
     buildingCoverageRatio: u?.u_building_coverage_ratio_ja || null,
     floorAreaRatio: u?.u_floor_area_ratio_ja || null,
     firePrevention: fp?.fire_prevention_ja || null,
+    cityPlanningRoad: cp || null,
   }
 
   const HAZARD_LABELS = {

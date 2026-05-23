@@ -70,6 +70,12 @@ function buildPrompt(address, d) {
   lines.push(`容積率：${d.zoning?.floorAreaRatio || '取得できず'}`)
   const fpText = d.zoning?.firePrevention
   lines.push(`防火・準防火地域：${fpText ? `${fpText}（窓・サッシ・外壁等の防火仕様確認推奨。準耐火建築物等の要否は用途・階数・構造等により変わるため建築士または都市計画課で要確認）` : 'データなし（都市計画課確認推奨）'}`)
+  const cp = d.zoning?.cityPlanningRoad
+  if (cp?.exists) {
+    lines.push(`都市計画道路：計画線が約${cp.minDistanceM}m以内に存在（計画線の正確な位置・事業化状況・建築制限の有無は自治体都市計画課で要確認）`)
+  } else {
+    lines.push(`都市計画道路：このタイル範囲ではデータなし（都市計画課確認推奨）`)
+  }
   lines.push('')
 
   // ハザード
