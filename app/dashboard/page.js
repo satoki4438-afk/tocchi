@@ -444,7 +444,7 @@ function DashboardContent() {
               </div>
               {summaryOpen && (
                 <>
-                  <p className="text-stone-700 leading-relaxed" style={{ fontSize: '13px', whiteSpace: 'pre-wrap' }}>{summary}</p>
+                  <p className="text-stone-700" style={{ fontSize: '13px', whiteSpace: 'pre-wrap', lineHeight: '1.65' }}>{summary}</p>
                   <p className="text-stone-400" style={{ fontSize: '11px', marginTop: '12px' }}>
                     このAI要点整理は参考情報です。法的判断・専門的助言を含みません。転記前に宅地建物取引士による確認が必要です。
                   </p>
