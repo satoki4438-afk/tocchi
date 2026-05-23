@@ -51,7 +51,7 @@ export default function ZoningPanel({ zoning, road }) {
         )}
       </div>
 
-      <div>
+      <div className="border-t border-stone-100 pt-4">
         <p className="text-sm text-stone-500 mb-2 font-medium">防火・準防火地域</p>
         {!fp ? (
           <p className="text-sm text-stone-400">データなし（都市計画課確認推奨）</p>
@@ -64,13 +64,13 @@ export default function ZoningPanel({ zoning, road }) {
               </span>
             </div>
             <p className="text-xs text-stone-400 leading-relaxed">
-              該当する場合、窓・サッシ・玄関ドア・外壁等に防火仕様が必要となり、建築費に影響する場合があります。準耐火建築物・防火設備等の要否は用途・階数・延べ面積・構造等により変わるため、建築士または自治体窓口で確認してください。
+              該当する場合、防火仕様により建築費へ影響する可能性があります。準耐火建築物・防火設備等の要否は建築士または自治体窓口で確認してください。
             </p>
           </div>
         )}
       </div>
 
-      <div>
+      <div className="border-t border-stone-100 pt-4">
         <p className="text-sm text-stone-500 mb-2 font-medium">
           接道候補
           {roads.length > 0 && (
