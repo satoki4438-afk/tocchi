@@ -1,7 +1,9 @@
 import { latlngToTile } from '@/lib/mlit'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 // XKT026: 洪水, XKT027: 高潮, XKT028: 津波, XKT029: 土砂災害, XKT016: 災害危険区域
 export async function GET(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat'))
   const lng = parseFloat(searchParams.get('lng'))

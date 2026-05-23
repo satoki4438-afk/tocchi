@@ -1,4 +1,5 @@
 import { latlngToTile } from '@/lib/mlit'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 // XKT004: 小学校区, XKT005: 中学校区（z=15）
 
@@ -34,6 +35,7 @@ function findContainingFeature(features, lng, lat) {
 }
 
 export async function GET(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat'))
   const lng = parseFloat(searchParams.get('lng'))

@@ -1,6 +1,8 @@
 import { adminAuth, adminDb } from '@/lib/firebaseAdmin'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 export async function POST(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const body = await request.json()
   const { idToken } = body
 

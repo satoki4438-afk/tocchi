@@ -1,5 +1,8 @@
+import { BETA_CLOSED } from '@/lib/betaMode'
+
 // XIT001: 不動産取引価格情報
 export async function GET(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const { searchParams } = new URL(request.url)
   const prefCd = searchParams.get('pref')
   const city = searchParams.get('city')

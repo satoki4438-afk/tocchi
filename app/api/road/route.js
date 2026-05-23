@@ -1,3 +1,5 @@
+import { BETA_CLOSED } from '@/lib/betaMode'
+
 // OpenStreetMap Overpass API: 接道道路情報（キー不要・無料）
 
 // 道路種別 → 推定幅員（m）マッピング（日本標準）
@@ -23,6 +25,7 @@ const HIGHWAY_WIDTH = {
 }
 
 export async function GET(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat'))
   const lng = parseFloat(searchParams.get('lng'))

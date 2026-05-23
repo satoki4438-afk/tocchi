@@ -159,6 +159,7 @@ function DashboardContent() {
 
   // 認証チェック＋データ取得を同時起動
   useEffect(() => {
+    if (BETA_CLOSED) return
     if (!address || !lat || !lng) { router.replace('/'); return }
     if (user === undefined) return // Firebase auth 読み込み中
 

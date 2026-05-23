@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { BETA_CLOSED } from '@/lib/betaMode'
 
 // 使用モデル — 必要に応じて変更
 const MODEL = 'claude-sonnet-4-6'
@@ -22,6 +23,7 @@ const SYSTEM_PROMPT = `あなたは不動産の物件調査メモ作成を補助
 - 文化財担当課：埋蔵文化財包蔵地の該当有無`
 
 export async function POST(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   let address, summaryData
   try {
     const body = await request.json()

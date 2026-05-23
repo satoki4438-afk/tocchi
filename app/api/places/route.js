@@ -1,3 +1,5 @@
+import { BETA_CLOSED } from '@/lib/betaMode'
+
 // Google Places API (New) v1: 周辺施設（病院・スーパー・コンビニ・駅）
 
 function haversineMeters(lat1, lng1, lat2, lng2) {
@@ -10,6 +12,7 @@ function haversineMeters(lat1, lng1, lat2, lng2) {
 }
 
 export async function GET(request) {
+  if (BETA_CLOSED) return Response.json({ error: 'beta_closed' }, { status: 503 })
   const { searchParams } = new URL(request.url)
   const lat = parseFloat(searchParams.get('lat'))
   const lng = parseFloat(searchParams.get('lng'))
