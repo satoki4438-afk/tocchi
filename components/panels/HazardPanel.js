@@ -1,5 +1,6 @@
 export default function HazardPanel({ hazard }) {
   const h = hazard?.hazard || {}
+  const lf = hazard?.liquefaction?.[0]?.properties
 
   const items = [
     { key: 'flood',      label: '洪水浸水想定区域' },
@@ -48,6 +49,33 @@ export default function HazardPanel({ hazard }) {
             </div>
           )
         })}
+      </div>
+
+      <div className="border-t border-stone-100 pt-3">
+        <p className="text-sm text-stone-500 mb-2 font-medium">液状化しやすさ</p>
+        {!lf ? (
+          <p className="text-sm text-stone-400">データなし（地盤調査推奨）</p>
+        ) : (
+          <div className="space-y-1">
+            <div className="flex justify-between items-baseline gap-2">
+              <span className="text-sm text-stone-500">判定</span>
+              <span className="text-sm font-semibold text-stone-800 text-right">
+                {lf.note || '要確認'}（レベル{lf.liquefaction_tendency_level}）
+              </span>
+            </div>
+            {lf.topographic_classification_name_ja && (
+              <div className="flex justify-between items-baseline gap-2">
+                <span className="text-sm text-stone-500">地形</span>
+                <span className="text-sm text-stone-600 text-right" style={{ maxWidth: '160px' }}>
+                  {lf.topographic_classification_name_ja}
+                </span>
+              </div>
+            )}
+            <p className="text-xs text-stone-400 leading-relaxed pt-1">
+              この地点の液状化傾向は参考情報です。地盤状況・造成履歴・地盤改良の要否は、地盤調査会社・建築士・自治体資料で確認してください。
+            </p>
+          </div>
+        )}
       </div>
 
       <p className="text-xs text-stone-400">

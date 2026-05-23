@@ -81,13 +81,20 @@ function buildSummaryData(data) {
     junior: jp?.A32_004_ja || jp?.name || null,
   }
 
+  const lfProps = data.hazard?.liquefaction?.[0]?.properties
+  const liquefaction = lfProps ? {
+    level: lfProps.liquefaction_tendency_level,
+    note: lfProps.note,
+    topographicClassification: lfProps.topographic_classification_name_ja,
+  } : null
+
   const nearby = (data.places?.categories || []).map(cat => {
     const first = cat.places?.[0]
     if (!first) return null
     return { label: cat.label, name: first.name, distance: first.distance }
   }).filter(Boolean)
 
-  return { zoning, hazard, roads, landprice, tradeItems, school, nearby }
+  return { zoning, hazard, liquefaction, roads, landprice, tradeItems, school, nearby }
 }
 
 function DashboardContent() {

@@ -78,6 +78,17 @@ function buildPrompt(address, d) {
   }
   lines.push('')
 
+  // 液状化
+  lines.push('【液状化しやすさ（国交省 XKT025 参考値）】')
+  if (d.liquefaction) {
+    lines.push(`判定：${d.liquefaction.note}（レベル${d.liquefaction.level}）`)
+    lines.push(`地形：${d.liquefaction.topographicClassification || '不明'}`)
+    lines.push('（液状化傾向は参考情報。地盤調査・造成履歴・基礎工法の要否は地盤調査会社・建築士・自治体資料で確認推奨）')
+  } else {
+    lines.push('データなし（地盤調査推奨）')
+  }
+  lines.push('')
+
   // ハザード
   lines.push('【ハザード情報（タイル範囲内の参考値）】')
   if (d.hazard) {
