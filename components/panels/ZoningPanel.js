@@ -1,10 +1,12 @@
 export default function ZoningPanel({ zoning, road }) {
   const zoningFeatures = zoning?.zoning || []
   const urbanFeatures = zoning?.urban || []
+  const fpFeatures = zoning?.firePrevention || []
   const roads = road?.roads || []
 
   const z = zoningFeatures[0]?.properties
   const u = urbanFeatures[0]?.properties
+  const fp = fpFeatures[0]?.properties
 
   const roadLabel = (highway) => {
     const map = {
@@ -45,6 +47,25 @@ export default function ZoningPanel({ zoning, road }) {
                 {u?.u_floor_area_ratio_ja || '要確認'}
               </span>
             </div>
+          </div>
+        )}
+      </div>
+
+      <div>
+        <p className="text-sm text-stone-500 mb-2 font-medium">防火・準防火地域</p>
+        {!fp ? (
+          <p className="text-sm text-stone-400">データなし（都市計画課確認推奨）</p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex justify-between items-baseline gap-2">
+              <span className="text-sm text-stone-500">区分</span>
+              <span className="text-sm font-semibold text-stone-800 text-right">
+                {fp.fire_prevention_ja || '要確認'}
+              </span>
+            </div>
+            <p className="text-xs text-stone-400 leading-relaxed">
+              該当する場合、窓・サッシ・玄関ドア・外壁等に防火仕様が必要となり、建築費に影響する場合があります。準耐火建築物・防火設備等の要否は用途・階数・延べ面積・構造等により変わるため、建築士または自治体窓口で確認してください。
+            </p>
           </div>
         )}
       </div>
