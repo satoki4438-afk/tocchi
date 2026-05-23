@@ -128,6 +128,7 @@ function DashboardContent() {
   const [summaryGenerated, setSummaryGenerated] = useState(false)
   const [muniCd, setMuniCd] = useState('')
   const [copied, setCopied] = useState(false)
+  const [summaryOpen, setSummaryOpen] = useState(true)
 
   const doFetch = () => {
     if (fetchedRef.current) return
@@ -331,32 +332,6 @@ function DashboardContent() {
           <NearbyPanel places={data.places} school={data.school} />
         </div>
 
-        {/* AI要点整理 */}
-        <div style={{ marginTop: '10px' }}>
-          <div className="print-hidden flex flex-col items-center">
-            <button
-              onClick={generateSummary}
-              disabled={!allLoaded || summaryLoading || summaryGenerated}
-              className="rounded-lg border border-stone-300 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ padding: '7px 20px', fontSize: '13px', color: summaryGenerated ? '#a8a29e' : '#1c1917', background: summaryGenerated ? '#fafaf9' : '#fff' }}
-            >
-              {summaryLoading ? 'AI要点整理を作成中...' : summaryGenerated ? '生成済み' : 'AI要点整理を生成'}
-            </button>
-            {summaryError && (
-              <p className="mt-2 text-sm text-red-500 text-center">{summaryError}</p>
-            )}
-          </div>
-          {summary && (
-            <div className="bg-white rounded-xl border border-stone-200" style={{ marginTop: '12px', padding: '20px 24px' }}>
-              <h3 className="font-semibold text-stone-800" style={{ fontSize: '14px', marginBottom: '12px' }}>AI要点整理</h3>
-              <p className="text-stone-700 leading-relaxed" style={{ fontSize: '13px', whiteSpace: 'pre-wrap' }}>{summary}</p>
-              <p className="text-stone-400" style={{ fontSize: '11px', marginTop: '12px' }}>
-                このAI要点整理は参考情報です。法的判断・専門的助言を含みません。転記前に宅地建物取引士による確認が必要です。
-              </p>
-            </div>
-          )}
-        </div>
-
         {/* 公式確認リンク */}
         <div className="print-hidden" style={{ marginTop: '10px' }}>
           <div className="bg-white rounded-xl border border-stone-200" style={{ padding: '12px 16px' }}>
@@ -438,6 +413,45 @@ function DashboardContent() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* AI要点整理 */}
+        <div style={{ marginTop: '10px' }}>
+          <div className="print-hidden flex flex-col items-center">
+            <button
+              onClick={generateSummary}
+              disabled={!allLoaded || summaryLoading || summaryGenerated}
+              className="rounded-lg border border-stone-300 font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{ padding: '7px 20px', fontSize: '13px', color: summaryGenerated ? '#a8a29e' : '#1c1917', background: summaryGenerated ? '#fafaf9' : '#fff' }}
+            >
+              {summaryLoading ? 'AI要点整理を作成中...' : summaryGenerated ? '生成済み' : 'AI要点整理を生成'}
+            </button>
+            {summaryError && (
+              <p className="mt-2 text-sm text-red-500 text-center">{summaryError}</p>
+            )}
+          </div>
+          {summary && (
+            <div className="bg-white rounded-xl border border-stone-200" style={{ marginTop: '12px', padding: '20px 24px', maxWidth: '720px', margin: '12px auto 0' }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: summaryOpen ? '12px' : '0' }}>
+                <h3 className="font-semibold text-stone-800" style={{ fontSize: '14px' }}>AI要点整理</h3>
+                <button
+                  onClick={() => setSummaryOpen(v => !v)}
+                  className="text-stone-400 hover:text-stone-600 transition-colors"
+                  style={{ fontSize: '12px', padding: '2px 8px', border: '1px solid #e7e5e4', borderRadius: '6px', background: 'none', cursor: 'pointer' }}
+                >
+                  {summaryOpen ? '閉じる' : '開く'}
+                </button>
+              </div>
+              {summaryOpen && (
+                <>
+                  <p className="text-stone-700 leading-relaxed" style={{ fontSize: '13px', whiteSpace: 'pre-wrap' }}>{summary}</p>
+                  <p className="text-stone-400" style={{ fontSize: '11px', marginTop: '12px' }}>
+                    このAI要点整理は参考情報です。法的判断・専門的助言を含みません。転記前に宅地建物取引士による確認が必要です。
+                  </p>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <p className="mt-4 text-xs text-stone-400 leading-relaxed text-center" style={{ maxWidth: '720px', margin: '16px auto 0' }}>
