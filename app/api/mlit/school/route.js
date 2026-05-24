@@ -30,8 +30,7 @@ function findContainingFeature(features, lng, lat) {
       }
     }
   }
-  // 一致なし → 最近傍フォールバックとして先頭を返す
-  return features[0] || null
+  return null
 }
 
 export async function GET(request) {
